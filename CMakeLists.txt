@@ -138,6 +138,7 @@ set(DISPLAY_DRIVER_SOURCES
     ${DISPLAY_DRIVER_BASE_DIR}/c/lib/e-Paper/EPD_2in13_V4.c
     ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config/DEV_Config.c
     ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config/sysfs_gpio.c
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config/dev_hardware_SPI.c
     ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config/sysfs_software_spi.c
     ${DISPLAY_DRIVER_BASE_DIR}/c/lib/GUI/GUI_Paint.c
 )
@@ -152,9 +153,14 @@ if(LVGL_FOUND)
     endif()
 endif()
 
+# Find OpenSSL
+find_package(OpenSSL REQUIRED)
+
 # Link libraries
 target_link_libraries(wallet_app
     ${LVGL_LIBRARIES}
+    OpenSSL::SSL
+    OpenSSL::Crypto
     m
     pthread
 )
