@@ -95,8 +95,14 @@ if(NOT LVGL_FOUND)
     FetchContent_Declare(
         lvgl
         GIT_REPOSITORY https://github.com/lvgl/lvgl.git
-        GIT_TAG v9.4.0
+        GIT_TAG v8.4.0
     )
+    # Configure LVGL before making it available
+    set(LV_USE_DRAW_SW_HELIUM OFF CACHE BOOL "Disable Helium assembly optimizations" FORCE)
+    set(LV_USE_DRAW_SW_ASM OFF CACHE BOOL "Disable all assembly optimizations" FORCE)
+    set(LV_BUILD_EXAMPLES OFF CACHE BOOL "Disable examples" FORCE)
+    set(LV_BUILD_DEMOS OFF CACHE BOOL "Disable demos" FORCE)
+    
     FetchContent_MakeAvailable(lvgl)
     
     # Copy our lv_conf.h to LVGL source directory
@@ -105,6 +111,9 @@ if(NOT LVGL_FOUND)
         ${lvgl_SOURCE_DIR}/lv_conf.h
         COPYONLY
     )
+    
+    # Note: LVGL v8.4.0 doesn't have Helium assembly optimizations
+    # This avoids the assembler issues with v9.x
     
     set(LVGL_FOUND TRUE)
     set(LVGL_INCLUDE_DIRS ${lvgl_SOURCE_DIR})
