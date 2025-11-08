@@ -78,6 +78,16 @@
 
 #endif
 
+#ifdef RADXA_ZERO_3W
+    #ifdef USE_DEV_LIB
+        #include "sysfs_gpio.h"
+        #include "dev_hardware_SPI.h"
+    #elif USE_HARDWARE_LIB
+        #include "sysfs_gpio.h"
+        #include "dev_hardware_SPI.h"
+    #endif
+#endif
+
 /**
  * data
 **/

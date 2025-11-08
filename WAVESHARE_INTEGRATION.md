@@ -112,8 +112,22 @@ The integration is automatic. Simply:
 ### Display Not Updating
 
 1. Check BUSY pin is connected correctly
-2. Verify SPI communication
-3. Check power supply
+2. Verify SPI communicationng C object CMakeFiles/wallet_app.dir/display_driver/c/lib/Config/DEV_Config.c.o
+/root/wallet/display_driver/c/lib/Config/DEV_Config.c: In function ‘DEV_Module_Init’:
+/root/wallet/display_driver/c/lib/Config/DEV_Config.c:355:9: error: implicit declaration of function ‘DEV_HARDWARE_SPI_begin’ [-Wimplicit-function-declaration]
+  355 |         DEV_HARDWARE_SPI_begin("/dev/spidev0.0");
+      |         ^~~~~~~~~~~~~~~~~~~~~~
+/root/wallet/display_driver/c/lib/Config/DEV_Config.c:356:9: error: implicit declaration of function ‘DEV_HARDWARE_SPI_setSpeed’ [-Wimplicit-function-declaration]
+  356 |         DEV_HARDWARE_SPI_setSpeed(10000000);  // 10MHz SPI speed
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~
+/root/wallet/display_driver/c/lib/Config/DEV_Config.c: In function ‘DEV_Module_Exit’:
+/root/wallet/display_driver/c/lib/Config/DEV_Config.c:411:9: error: implicit declaration of function ‘DEV_HARDWARE_SPI_end’ [-Wimplicit-function-declaration]
+  411 |         DEV_HARDWARE_SPI_end();
+      |         ^~~~~~~~~~~~~~~~~~~~
+/root/wallet/display_driver/c/lib/Config/DEV_Config.c:416:9: error: implicit declaration of function ‘SYSFS_GPIO_Unexport’ [-Wimplicit-function-declaration]
+  416 |         SYSFS_GPIO_Unexport(EPD_CS_PIN);
+      |         ^~~~~~~~~~~~~~~~~~~
+
 4. Try full update mode: Set `update_count % 10 == 0` to always true
 
 ### Ghosting Issues
