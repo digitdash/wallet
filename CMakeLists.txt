@@ -12,19 +12,28 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Config
     ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/e-Paper
     ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/GUI
+    ${CMAKE_SOURCE_DIR}
 )
 
 # Find required packages
 find_package(PkgConfig REQUIRED)
 
 # LVGL (assuming installed via system package or submodule)
-pkg_check_modules(LVGL REQUIRED lvgl)
+pkg_check_modules(LVGL lvgl)
 if(NOT LVGL_FOUND)
-    message(FATAL_ERROR "LVGL not found. Install via: apt-get install liblvgl-dev or use submodule")
-endif
-
-# Framebuffer libraries
-find_library(LINUX_FBDEV linux_fbdev)
+    message(WARNING "LVGL not found via pkg-config. Trying alternative methods...")
+    # Try to find LVGL manually
+    find_path(LVGL_INCLUDE_DIR lvgl.h PATHS /usr/include/lvgl /usr/local/include/lvgl)
+    find_library(LVGL_LIBRARY lvgl PATHS /usr/lib /usr/local/lib)
+    if(LVGL_INCLUDE_DIR AND LVGL_LIBRARY)
+        set(LVGL_FOUND TRUE)
+        set(LVGL_INCLUDE_DIRS ${LVGL_INCLUDE_DIR})
+        set(LVGL_LIBRARIES ${LVGL_LIBRARY})
+        set(LVGL_CFLAGS_OTHER "")
+    else()
+        message(FATAL_ERROR "LVGL not found. Install via: apt-get install liblvgl-dev or use submodule")
+    endif()
+endif()
 
 # Source files
 set(SOURCES
@@ -49,6 +58,13 @@ set(DISPLAY_DRIVER_SOURCES
 # Create executable
 add_executable(wallet_app ${SOURCES} ${DISPLAY_DRIVER_SOURCES})
 
+# Add LVGL include directories
+if(LVGL_FOUND)
+    if(LVGL_INCLUDE_DIRS)
+        target_include_directories(wallet_app PRIVATE ${LVGL_INCLUDE_DIRS})
+    endif()
+endif()
+
 # Link libraries
 target_link_libraries(wallet_app
     ${LVGL_LIBRARIES}
@@ -56,7 +72,10 @@ target_link_libraries(wallet_app
     pthread
 )
 
-target_compile_options(wallet_app PRIVATE ${LVGL_CFLAGS_OTHER})
+# Add LVGL compile options
+if(LVGL_FOUND AND LVGL_CFLAGS_OTHER)
+    target_compile_options(wallet_app PRIVATE ${LVGL_CFLAGS_OTHER})
+endif()
 
 # Compiler definitions
 target_compile_definitions(wallet_app PRIVATE
