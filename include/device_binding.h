@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #define DEVICE_ID_SIZE 32
 #define BINDING_KEY_SIZE 32
