@@ -20,7 +20,7 @@ void display_fbdev_deinit(void);
  * @param area Area to flush
  * @param color_p Buffer containing pixel data
  */
-void display_fbdev_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map);
+void display_fbdev_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p);
 
 /**
  * Get display width

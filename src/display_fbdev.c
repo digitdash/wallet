@@ -23,7 +23,9 @@ static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
 static uint8_t *fb_mem = NULL;
 static size_t fb_size = 0;
-static lv_display_t *display = NULL;
+static lv_disp_t *display = NULL;
+static lv_disp_drv_t disp_drv;
+static lv_disp_draw_buf_t disp_buf;
 
 // For e-paper, we need to convert RGB to monochrome
 static uint8_t *epaper_buffer = NULL;
@@ -120,35 +122,12 @@ int display_fbdev_init(void) {
         }
     }
     
-    // Initialize LVGL display
-    display = lv_display_create(EPD_WIDTH, EPD_HEIGHT);
-    if (!display) {
-        fprintf(stderr, "Error: Failed to create LVGL display\n");
-        free(epaper_buffer);
-        if (waveshare_initialized) {
-            DEV_Module_Exit();
-        }
-        if (fb_mem) {
-            munmap(fb_mem, fb_size);
-        }
-        if (fb_fd >= 0) {
-            close(fb_fd);
-        }
-        return -1;
-    }
-    
-    // Set flush callback
-    lv_display_set_flush_cb(display, display_fbdev_flush);
-    
-    // Set color format (RGB565, will be converted to monochrome)
-    lv_display_set_color_format(display, LV_COLOR_FORMAT_RGB565);
-    
+    // Initialize LVGL display (v8.x API)
     // Allocate display buffer
     size_t buf_size = EPD_WIDTH * EPD_HEIGHT * sizeof(lv_color_t);
     void *buf1 = malloc(buf_size);
     if (!buf1) {
         fprintf(stderr, "Error: Failed to allocate display buffer\n");
-        lv_display_delete(display);
         free(epaper_buffer);
         if (waveshare_initialized) {
             DEV_Module_Exit();
@@ -162,7 +141,33 @@ int display_fbdev_init(void) {
         return -1;
     }
     
-    lv_display_set_buffers(display, buf1, NULL, buf_size, LV_DISPLAY_RENDER_MODE_PARTIAL);
+    // Initialize display buffer
+    lv_disp_draw_buf_init(&disp_buf, buf1, NULL, EPD_WIDTH * EPD_HEIGHT);
+    
+    // Initialize display driver
+    lv_disp_drv_init(&disp_drv);
+    disp_drv.hor_res = EPD_WIDTH;
+    disp_drv.ver_res = EPD_HEIGHT;
+    disp_drv.flush_cb = display_fbdev_flush;
+    disp_drv.draw_buf = &disp_buf;
+    
+    // Register display driver
+    display = lv_disp_drv_register(&disp_drv);
+    if (!display) {
+        fprintf(stderr, "Error: Failed to register LVGL display\n");
+        free(buf1);
+        free(epaper_buffer);
+        if (waveshare_initialized) {
+            DEV_Module_Exit();
+        }
+        if (fb_mem) {
+            munmap(fb_mem, fb_size);
+        }
+        if (fb_fd >= 0) {
+            close(fb_fd);
+        }
+        return -1;
+    }
     
     printf("Display initialized: %dx%d (Waveshare 2.13\" V4)\n", EPD_WIDTH, EPD_HEIGHT);
     return 0;
@@ -170,7 +175,7 @@ int display_fbdev_init(void) {
 
 void display_fbdev_deinit(void) {
     if (display) {
-        lv_display_delete(display);
+        lv_disp_remove(display);
         display = NULL;
     }
     
@@ -198,16 +203,52 @@ void display_fbdev_deinit(void) {
     }
 }
 
-void display_fbdev_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
-    // Get the buffer from LVGL
-    lv_draw_buf_t *draw_buf = lv_display_get_draw_buf(disp);
-    if (!draw_buf || !epaper_buffer) {
-        lv_display_flush_ready(disp);
+void display_fbdev_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p) {
+    if (!epaper_buffer || !color_p || !area) {
+        lv_disp_flush_ready(disp_drv);
         return;
     }
     
-    // Convert RGB565 to monochrome
-    rgb_to_monochrome((uint8_t *)draw_buf->buf, epaper_buffer, EPD_WIDTH, EPD_HEIGHT);
+    // Calculate area dimensions
+    int32_t width = lv_area_get_width(area);
+    int32_t height = lv_area_get_height(area);
+    
+    // Convert RGB565 to monochrome for the specified area
+    // color_p is the buffer from LVGL containing the area to update
+    // We need to convert only the area being updated, not the whole screen
+    size_t mono_stride = (EPD_WIDTH + 7) / 8;
+    
+    for (int32_t y = 0; y < height; y++) {
+        for (int32_t x = 0; x < width; x++) {
+            // Get pixel from LVGL buffer
+            lv_color_t pixel = color_p[y * width + x];
+            
+            // Convert RGB565 to grayscale
+            uint16_t rgb565 = pixel.full;
+            uint8_t r = (rgb565 >> 11) & 0x1F;
+            uint8_t g = (rgb565 >> 5) & 0x3F;
+            uint8_t b = rgb565 & 0x1F;
+            
+            // Convert to 8-bit grayscale
+            uint8_t gray = ((r * 8) + (g * 4) + (b * 8)) / 3;
+            
+            // Threshold to black/white
+            uint8_t bit = (gray < 128) ? 1 : 0;
+            
+            // Calculate position in full screen coordinates
+            int32_t screen_x = area->x1 + x;
+            int32_t screen_y = area->y1 + y;
+            
+            // Set bit in monochrome buffer
+            size_t mono_idx = screen_y * mono_stride + (screen_x / 8);
+            size_t bit_pos = 7 - (screen_x % 8);
+            if (bit) {
+                epaper_buffer[mono_idx] |= (1 << bit_pos);
+            } else {
+                epaper_buffer[mono_idx] &= ~(1 << bit_pos);
+            }
+        }
+    }
     
     // Optional: Write to framebuffer for debugging (if available)
     if (fb_mem && fb_fd >= 0) {
@@ -247,7 +288,7 @@ void display_fbdev_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *px_
         update_count++;
     }
     
-    lv_display_flush_ready(disp);
+    lv_disp_flush_ready(disp_drv);
 }
 
 uint32_t display_fbdev_get_width(void) {
