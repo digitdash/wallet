@@ -4,16 +4,36 @@ project(monero_wallet VERSION 1.0.0 LANGUAGES C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Include directories
+# Include directories (will be updated after finding display_driver)
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/drivers
     ${CMAKE_SOURCE_DIR}/auth
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Config
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/e-Paper
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/GUI
     ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Fonts
+)
+
+# Find display_driver directory first
+set(DISPLAY_DRIVER_BASE_DIR "")
+if(EXISTS ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
+    set(DISPLAY_DRIVER_BASE_DIR ${CMAKE_SOURCE_DIR}/../display_driver)
+elseif(EXISTS ${CMAKE_SOURCE_DIR}/../../display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
+    set(DISPLAY_DRIVER_BASE_DIR ${CMAKE_SOURCE_DIR}/../../display_driver)
+elseif(EXISTS /root/nexus/display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
+    set(DISPLAY_DRIVER_BASE_DIR /root/nexus/display_driver)
+elseif(EXISTS /root/display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
+    set(DISPLAY_DRIVER_BASE_DIR /root/display_driver)
+else()
+    message(FATAL_ERROR "Cannot find display_driver directory. Please check the path.")
+endif()
+
+message(STATUS "Using display_driver at: ${DISPLAY_DRIVER_BASE_DIR}")
+
+# Add display_driver include directories
+include_directories(
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/e-Paper
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/GUI
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Fonts
 )
 
 # Find required packages
@@ -106,13 +126,13 @@ set(SOURCES
     ${CMAKE_SOURCE_DIR}/auth/tropic_auth.c
 )
 
-# Display driver sources (Waveshare) - using absolute paths
+# Display driver sources (Waveshare) - using DISPLAY_DRIVER_BASE_DIR found above
 set(DISPLAY_DRIVER_SOURCES
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/e-Paper/EPD_2in13_V4.c
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Config/DEV_Config.c
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Config/sysfs_gpio.c
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Config/sysfs_software_spi.c
-    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/GUI/GUI_Paint.c
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/e-Paper/EPD_2in13_V4.c
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config/DEV_Config.c
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config/sysfs_gpio.c
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config/sysfs_software_spi.c
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/GUI/GUI_Paint.c
 )
 
 # Create executable
