@@ -13,6 +13,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/e-Paper
     ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/GUI
     ${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Fonts
 )
 
 # Find required packages
@@ -94,24 +95,24 @@ if(NOT LVGL_FOUND)
     message(STATUS "LVGL will be downloaded and built from source")
 endif()
 
-# Source files
+# Source files (using CMAKE_SOURCE_DIR for proper paths)
 set(SOURCES
-    src/main.c
-    src/wallet_ui.c
-    src/display_fbdev.c
-    drivers/epaper_driver.c
-    drivers/gpio_driver.c
-    auth/device_binding.c
-    auth/tropic_auth.c
+    ${CMAKE_SOURCE_DIR}/src/main.c
+    ${CMAKE_SOURCE_DIR}/src/wallet_ui.c
+    ${CMAKE_SOURCE_DIR}/src/display_fbdev.c
+    ${CMAKE_SOURCE_DIR}/drivers/epaper_driver.c
+    ${CMAKE_SOURCE_DIR}/drivers/gpio_driver.c
+    ${CMAKE_SOURCE_DIR}/auth/device_binding.c
+    ${CMAKE_SOURCE_DIR}/auth/tropic_auth.c
 )
 
-# Display driver sources (Waveshare)
+# Display driver sources (Waveshare) - using absolute paths
 set(DISPLAY_DRIVER_SOURCES
-    ../display_driver/c/lib/e-Paper/EPD_2in13_V4.c
-    ../display_driver/c/lib/Config/DEV_Config.c
-    ../display_driver/c/lib/Config/sysfs_gpio.c
-    ../display_driver/c/lib/Config/sysfs_software_spi.c
-    ../display_driver/c/lib/GUI/GUI_Paint.c
+    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/e-Paper/EPD_2in13_V4.c
+    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Config/DEV_Config.c
+    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Config/sysfs_gpio.c
+    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/Config/sysfs_software_spi.c
+    ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/GUI/GUI_Paint.c
 )
 
 # Create executable
