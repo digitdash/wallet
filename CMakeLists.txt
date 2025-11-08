@@ -18,21 +18,80 @@ include_directories(
 # Find required packages
 find_package(PkgConfig REQUIRED)
 
-# LVGL (assuming installed via system package or submodule)
-pkg_check_modules(LVGL lvgl)
+# LVGL - Try multiple methods to find it
+set(LVGL_FOUND FALSE)
+
+# Method 1: Try pkg-config
+pkg_check_modules(LVGL_PKG lvgl)
+if(LVGL_PKG_FOUND)
+    set(LVGL_FOUND TRUE)
+    set(LVGL_INCLUDE_DIRS ${LVGL_PKG_INCLUDE_DIRS})
+    set(LVGL_LIBRARIES ${LVGL_PKG_LIBRARIES})
+    set(LVGL_CFLAGS_OTHER ${LVGL_PKG_CFLAGS_OTHER})
+    message(STATUS "Found LVGL via pkg-config")
+endif()
+
+# Method 2: Try to find LVGL as submodule or in parent directory
 if(NOT LVGL_FOUND)
-    message(WARNING "LVGL not found via pkg-config. Trying alternative methods...")
-    # Try to find LVGL manually
-    find_path(LVGL_INCLUDE_DIR lvgl.h PATHS /usr/include/lvgl /usr/local/include/lvgl)
-    find_library(LVGL_LIBRARY lvgl PATHS /usr/lib /usr/local/lib)
+    # Check for LVGL submodule
+    if(EXISTS ${CMAKE_SOURCE_DIR}/../lvgl/CMakeLists.txt)
+        set(LVGL_FOUND TRUE)
+        add_subdirectory(${CMAKE_SOURCE_DIR}/../lvgl)
+        set(LVGL_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/../lvgl)
+        set(LVGL_LIBRARIES lvgl)
+        set(LVGL_CFLAGS_OTHER "")
+        message(STATUS "Found LVGL as submodule")
+    endif()
+endif()
+
+# Method 3: Try to find LVGL in system paths
+if(NOT LVGL_FOUND)
+    find_path(LVGL_INCLUDE_DIR lvgl.h 
+        PATHS 
+        /usr/include/lvgl 
+        /usr/local/include/lvgl
+        /usr/include
+        /usr/local/include
+    )
+    find_library(LVGL_LIBRARY 
+        NAMES lvgl liblvgl
+        PATHS 
+        /usr/lib 
+        /usr/local/lib
+        /usr/lib/aarch64-linux-gnu
+    )
     if(LVGL_INCLUDE_DIR AND LVGL_LIBRARY)
         set(LVGL_FOUND TRUE)
         set(LVGL_INCLUDE_DIRS ${LVGL_INCLUDE_DIR})
         set(LVGL_LIBRARIES ${LVGL_LIBRARY})
         set(LVGL_CFLAGS_OTHER "")
-    else()
-        message(FATAL_ERROR "LVGL not found. Install via: apt-get install liblvgl-dev or use submodule")
+        message(STATUS "Found LVGL in system paths")
     endif()
+endif()
+
+# Method 4: Download and build LVGL if not found
+if(NOT LVGL_FOUND)
+    message(STATUS "LVGL not found. Will download and build from source...")
+    include(FetchContent)
+    FetchContent_Declare(
+        lvgl
+        GIT_REPOSITORY https://github.com/lvgl/lvgl.git
+        GIT_TAG v9.4.0
+    )
+    FetchContent_MakeAvailable(lvgl)
+    
+    # Copy our lv_conf.h to LVGL source directory
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/lv_conf.h
+        ${lvgl_SOURCE_DIR}/lv_conf.h
+        COPYONLY
+    )
+    
+    set(LVGL_FOUND TRUE)
+    set(LVGL_INCLUDE_DIRS ${lvgl_SOURCE_DIR})
+    set(LVGL_LIBRARIES lvgl)
+    set(LVGL_CFLAGS_OTHER "")
+    message(STATUS "LVGL will be downloaded and built from source")
 endif()
 
 # Source files
