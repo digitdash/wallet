@@ -12,16 +12,14 @@ include_directories(
     ${CMAKE_SOURCE_DIR}
 )
 
-# Find display_driver directory first
+# Find display_driver directory first (now inside wallet folder)
 set(DISPLAY_DRIVER_BASE_DIR "")
-if(EXISTS ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
+if(EXISTS ${CMAKE_SOURCE_DIR}/display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
+    set(DISPLAY_DRIVER_BASE_DIR ${CMAKE_SOURCE_DIR}/display_driver)
+elseif(EXISTS ${CMAKE_SOURCE_DIR}/../display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
     set(DISPLAY_DRIVER_BASE_DIR ${CMAKE_SOURCE_DIR}/../display_driver)
-elseif(EXISTS ${CMAKE_SOURCE_DIR}/../../display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
-    set(DISPLAY_DRIVER_BASE_DIR ${CMAKE_SOURCE_DIR}/../../display_driver)
-elseif(EXISTS /root/nexus/display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
-    set(DISPLAY_DRIVER_BASE_DIR /root/nexus/display_driver)
-elseif(EXISTS /root/display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
-    set(DISPLAY_DRIVER_BASE_DIR /root/display_driver)
+elseif(EXISTS /root/wallet/display_driver/c/lib/e-Paper/EPD_2in13_V4.c)
+    set(DISPLAY_DRIVER_BASE_DIR /root/wallet/display_driver)
 else()
     message(FATAL_ERROR "Cannot find display_driver directory. Please check the path.")
 endif()
