@@ -52,10 +52,7 @@ For Radxa Zero 3w, you need to:
      - **Software configuration**: NO - These are automatically managed by the hardware SPI driver (`/dev/spidev0.0`)
      - CLK: Connect to SPI hardware pin (typically GPIO 23 / SPI0_SCLK on Radxa Zero 3w)
      - MOSI: Connect to SPI hardware pin (typically GPIO 19 / SPI0_MOSI on Radxa Zero 3w)
-   - **Note**: If using software SPI, you would need to configure CLK and MOSI as GPIO pins in software, but with hardware SPI you only need the physical connections.
-
-### Current Configuration (Waveshare HAT Standard)
-
+   - **Note**: If using software SPI, you would need to configure CLK and MOSI as GPIO pins in software, but with hardware SPI you only need the physical connections.K\
 The GPIO pins are configured in `display_driver/c/lib/Config/DEV_Config.c` using the Waveshare HAT standard pinout:
 
 - **RST**: GPIO 17 (physical pin 11)
