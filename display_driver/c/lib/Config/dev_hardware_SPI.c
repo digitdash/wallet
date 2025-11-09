@@ -33,6 +33,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <stdint.h> 
 #include <unistd.h> 
@@ -331,16 +332,22 @@ uint8_t DEV_HARDWARE_SPI_TransferByte(uint8_t buf)
 {
     uint8_t rbuf[1];
     struct spi_ioc_transfer tr_local = {0};  // Initialize to zero
-    tr_local.len = 1;
+    tr_local.len = 1;  // 1 byte
     tr_local.tx_buf =  (unsigned long)&buf;
     tr_local.rx_buf =  (unsigned long)rbuf;
     tr_local.speed_hz = hardware_SPI.speed;
     tr_local.bits_per_word = bits;
     tr_local.delay_usecs = hardware_SPI.delay;
+    tr_local.cs_change = 0;  // Don't change CS after transfer (we control it manually)
     
     //ioctl Operation, transmission of data
-    if ( ioctl(hardware_SPI.fd, SPI_IOC_MESSAGE(1), &tr_local) < 1 )  
-        DEV_HARDWARE_SPI_Debug("can't send spi message\r\n"); 
+    int ret = ioctl(hardware_SPI.fd, SPI_IOC_MESSAGE(1), &tr_local);
+    if (ret < 1) {
+        DEV_HARDWARE_SPI_Debug("SPI transfer failed: ret=%d, errno=%d\r\n", ret, errno);
+        perror("SPI transfer");
+    } else {
+        DEV_HARDWARE_SPI_Debug("SPI sent: 0x%02X, received: 0x%02X\r\n", buf, rbuf[0]);
+    }
     return rbuf[0];
 }
 
