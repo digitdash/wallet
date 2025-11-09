@@ -76,22 +76,21 @@ static void EPD_2in13_V4_SendData(UBYTE Data)
 }
 
 /******************************************************************************
-function :	Wait until the busy_pin goes HIGH (ready)
+function :	Wait until the busy_pin goes LOW (ready)
 parameter:
-Note: According to Waveshare spec, BUSY=0 means busy, BUSY=1 means ready
+Note: BUSY=1 means busy, BUSY=0 means ready (matches working ESP32 code)
 ******************************************************************************/
 void EPD_2in13_V4_ReadBusy(void)
 {
-    Debug("e-Paper busy - waiting for ready (HIGH)\r\n");
+    Debug("e-Paper busy\r\n");
 	int timeout = 1000;  // 10 seconds max wait
 	int count = 0;
 	int busy_value;
 	while(timeout > 0)
-	{
+	{	 //=1 BUSY (when BUSY=1, display is busy; when BUSY=0, display is ready)
 		busy_value = DEV_Digital_Read(EPD_BUSY_PIN);
-		// BUSY=0 means busy, BUSY=1 means ready
-		if(busy_value == 1) {
-			Debug("e-Paper ready (waited %d ms, BUSY pin = %d)\r\n", count * 10, busy_value);
+		if(busy_value == 0) {
+			Debug("e-Paper busy release (waited %d ms, BUSY pin = %d)\r\n", count * 10, busy_value);
 			DEV_Delay_ms(10);
 			return;
 		}
@@ -101,7 +100,7 @@ void EPD_2in13_V4_ReadBusy(void)
 	}
 	busy_value = DEV_Digital_Read(EPD_BUSY_PIN);
 	Debug("WARNING: e-Paper busy timeout! (waited 10s, BUSY pin = %d)\r\n", busy_value);
-	Debug("BUSY=0 means busy, BUSY=1 means ready\r\n");
+	Debug("BUSY=1 means busy, BUSY=0 means ready\r\n");
 	DEV_Delay_ms(10);
 }
 

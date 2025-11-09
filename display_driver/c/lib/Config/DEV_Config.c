@@ -412,14 +412,14 @@ UBYTE DEV_Module_Init(void)
 	DEV_HARDWARE_SPI_begin("/dev/spidev1.0");
 	DEV_HARDWARE_SPI_SetBitOrder(SPI_BIT_ORDER_MSBFIRST);  // Waveshare uses MSB first
 	DEV_HARDWARE_SPI_ChipSelect(SPI_CS_Mode_NONE);  // CS is manually controlled
-	DEV_HARDWARE_SPI_setSpeed(10000000);  // 10MHz SPI speed
+	DEV_HARDWARE_SPI_setSpeed(1000000);  // 1MHz SPI speed (matches working ESP32 code)
 #elif USE_HARDWARE_LIB
 	printf("Write and read /dev/spidev1.0 \r\n");
 	DEV_GPIO_Init();
 	DEV_HARDWARE_SPI_begin("/dev/spidev1.0");
 	DEV_HARDWARE_SPI_SetBitOrder(SPI_BIT_ORDER_MSBFIRST);  // Waveshare uses MSB first
 	DEV_HARDWARE_SPI_ChipSelect(SPI_CS_Mode_NONE);  // CS is manually controlled
-	DEV_HARDWARE_SPI_setSpeed(10000000);
+	DEV_HARDWARE_SPI_setSpeed(1000000);  // 1MHz SPI speed (matches working ESP32 code)
 #endif
 
 #endif

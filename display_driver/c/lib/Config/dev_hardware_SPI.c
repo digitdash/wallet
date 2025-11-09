@@ -330,12 +330,16 @@ Info:
 uint8_t DEV_HARDWARE_SPI_TransferByte(uint8_t buf)
 {
     uint8_t rbuf[1];
-    tr.len = 1;
-    tr.tx_buf =  (unsigned long)&buf;
-    tr.rx_buf =  (unsigned long)rbuf;
+    struct spi_ioc_transfer tr_local = {0};  // Initialize to zero
+    tr_local.len = 1;
+    tr_local.tx_buf =  (unsigned long)&buf;
+    tr_local.rx_buf =  (unsigned long)rbuf;
+    tr_local.speed_hz = hardware_SPI.speed;
+    tr_local.bits_per_word = bits;
+    tr_local.delay_usecs = hardware_SPI.delay;
     
     //ioctl Operation, transmission of data
-    if ( ioctl(hardware_SPI.fd, SPI_IOC_MESSAGE(1), &tr) < 1 )  
+    if ( ioctl(hardware_SPI.fd, SPI_IOC_MESSAGE(1), &tr_local) < 1 )  
         DEV_HARDWARE_SPI_Debug("can't send spi message\r\n"); 
     return rbuf[0];
 }
