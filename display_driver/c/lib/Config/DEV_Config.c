@@ -410,11 +410,15 @@ UBYTE DEV_Module_Init(void)
 	DEV_GPIO_Init();
 	printf("Radxa Zero 3w: Using hardware SPI /dev/spidev1.0\r\n");
 	DEV_HARDWARE_SPI_begin("/dev/spidev1.0");
+	DEV_HARDWARE_SPI_SetBitOrder(SPI_BIT_ORDER_MSBFIRST);  // Waveshare uses MSB first
+	DEV_HARDWARE_SPI_ChipSelect(SPI_CS_Mode_NONE);  // CS is manually controlled
 	DEV_HARDWARE_SPI_setSpeed(10000000);  // 10MHz SPI speed
 #elif USE_HARDWARE_LIB
 	printf("Write and read /dev/spidev1.0 \r\n");
 	DEV_GPIO_Init();
 	DEV_HARDWARE_SPI_begin("/dev/spidev1.0");
+	DEV_HARDWARE_SPI_SetBitOrder(SPI_BIT_ORDER_MSBFIRST);  // Waveshare uses MSB first
+	DEV_HARDWARE_SPI_ChipSelect(SPI_CS_Mode_NONE);  // CS is manually controlled
 	DEV_HARDWARE_SPI_setSpeed(10000000);
 #endif
 
