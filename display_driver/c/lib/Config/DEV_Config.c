@@ -60,6 +60,14 @@ void DEV_Digital_Write(UWORD Pin, UBYTE Value)
 	Debug("not support");
 #endif
 #endif
+
+#ifdef RADXA_ZERO_3W
+#ifdef USE_DEV_LIB
+	SYSFS_GPIO_Write(Pin, Value);
+#elif USE_HARDWARE_LIB
+	SYSFS_GPIO_Write(Pin, Value);
+#endif
+#endif
 }
 
 UBYTE DEV_Digital_Read(UWORD Pin)
@@ -82,6 +90,15 @@ UBYTE DEV_Digital_Read(UWORD Pin)
 	Debug("not support");
 #endif
 #endif
+
+#ifdef RADXA_ZERO_3W
+#ifdef USE_DEV_LIB
+	Read_value = SYSFS_GPIO_Read(Pin);
+#elif USE_HARDWARE_LIB
+	Read_value = SYSFS_GPIO_Read(Pin);
+#endif
+#endif
+
 	return Read_value;
 }
 
@@ -107,6 +124,14 @@ void DEV_SPI_WriteByte(uint8_t Value)
 	Debug("not support");
 #endif
 #endif
+
+#ifdef RADXA_ZERO_3W
+#ifdef USE_DEV_LIB
+	DEV_HARDWARE_SPI_TransferByte(Value);
+#elif USE_HARDWARE_LIB
+	DEV_HARDWARE_SPI_TransferByte(Value);
+#endif
+#endif
 }
 
 void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
@@ -128,6 +153,14 @@ void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
 	Debug("not support");
 #elif USE_HARDWARE_LIB
 	Debug("not support");
+#endif
+#endif
+
+#ifdef RADXA_ZERO_3W
+#ifdef USE_DEV_LIB
+	DEV_HARDWARE_SPI_Transfer(pData, Len);
+#elif USE_HARDWARE_LIB
+	DEV_HARDWARE_SPI_Transfer(pData, Len);
 #endif
 #endif
 }
@@ -170,6 +203,24 @@ void DEV_GPIO_Mode(UWORD Pin, UWORD Mode)
 	SYSFS_GPIO_Direction(Pin, Mode);
 #elif USE_HARDWARE_LIB
 	Debug("not support");
+#endif
+#endif
+
+#ifdef RADXA_ZERO_3W
+#ifdef USE_DEV_LIB
+	SYSFS_GPIO_Export(Pin);
+	if(Mode == 0 || Mode == SYSFS_GPIO_IN) {
+		SYSFS_GPIO_Direction(Pin, SYSFS_GPIO_IN);
+	} else {
+		SYSFS_GPIO_Direction(Pin, SYSFS_GPIO_OUT);
+	}
+#elif USE_HARDWARE_LIB
+	SYSFS_GPIO_Export(Pin);
+	if(Mode == 0 || Mode == SYSFS_GPIO_IN) {
+		SYSFS_GPIO_Direction(Pin, SYSFS_GPIO_IN);
+	} else {
+		SYSFS_GPIO_Direction(Pin, SYSFS_GPIO_OUT);
+	}
 #endif
 #endif
 }
