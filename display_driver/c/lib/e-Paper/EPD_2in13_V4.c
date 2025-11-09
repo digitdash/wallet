@@ -54,10 +54,10 @@ parameter:
 ******************************************************************************/
 static void EPD_2in13_V4_SendCommand(UBYTE Reg)
 {
-    DEV_Digital_Write(EPD_DC_PIN, 0);  // Command mode
-    DEV_Digital_Write(EPD_CS_PIN, 0);  // CS low
+    DEV_Digital_Write(EPD_DC_PIN, 0);
+    DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_SPI_WriteByte(Reg);
-    DEV_Digital_Write(EPD_CS_PIN, 1);  // CS high
+    DEV_Digital_Write(EPD_CS_PIN, 1);
     Debug("SPI CMD: 0x%02X\r\n", Reg);
 }
 
@@ -68,10 +68,10 @@ parameter:
 ******************************************************************************/
 static void EPD_2in13_V4_SendData(UBYTE Data)
 {
-    DEV_Digital_Write(EPD_DC_PIN, 1);  // Data mode
-    DEV_Digital_Write(EPD_CS_PIN, 0);  // CS low
+    DEV_Digital_Write(EPD_DC_PIN, 1);
+    DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_SPI_WriteByte(Data);
-    DEV_Digital_Write(EPD_CS_PIN, 1);  // CS high
+    DEV_Digital_Write(EPD_CS_PIN, 1);
     // Debug("SPI DATA: 0x%02X\r\n", Data);  // Too verbose, comment out
 }
 
