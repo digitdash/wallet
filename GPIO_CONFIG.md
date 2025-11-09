@@ -8,15 +8,15 @@ The Waveshare driver requires the following GPIO pins to be configured. The defa
 
 ### Required Pins
 
-| Pin | Function | Direction | GPIO Pin (HAT Standard) | Physical Pin |
+| Pin | Function | Direction | GPIO Pin | Physical Pin |
 |-----|----------|-----------|-------------------------|--------------|
-| RST | Reset | Output | GPIO 17 | Pin 11 |
-| DC  | Data/Command | Output | GPIO 25 | Pin 22 |
-| CS  | Chip Select | Output | GPIO 8 (SPI0_CE0) | Pin 24 |
-| CLK | SPI Clock | Output | GPIO 11 (SCLK) | Pin 23 |
-| MOSI | SPI Data Out | Output | GPIO 10 (MOSI) | Pin 19 |
-| BUSY | Busy Signal | Input | GPIO 24 | Pin 18 |
-| PWR | Power (optional) | Output | GPIO 18 | Pin 12 | 
+| RST | Reset | Output | GPIO3_A1 | Pin 11 |
+| DC  | Data/Command | Output | GPIO3_A3 | Pin 12 |
+| CS  | Chip Select | Output | GPIO4_C6 (SPI3_CS0_M1) | Pin 24 |
+| CLK | SPI Clock | Output | GPIO4_C2 (SPI3_CLK_M1) | Pin 23 |
+| MOSI | SPI Data Out | Output | GPIO4_C3(SPI3_MOSI_M1) | Pin 19 |
+| BUSY | Busy Signal | Input | GPIO3_C1 | Pin 22 |
+| PWR | Power (optional) | Output | +3.3v | Pin 1 | 
 
 ### Radxa Zero 3w Configuration
 

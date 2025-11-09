@@ -266,23 +266,29 @@ void DEV_GPIO_Init(void)
 	EPD_BUSY_PIN    = GPIO24;
 #elif RADXA_ZERO_3W
 	// Radxa Zero 3w GPIO configuration for Waveshare 2.13" V4 HAT
-	// Using Waveshare HAT standard pinout (Raspberry Pi compatible)
-	// If your Radxa Zero 3w GPIO numbers differ, adjust these values
-	EPD_RST_PIN     = 17;   // GPIO 17 (HAT standard, physical pin 11)
-	EPD_DC_PIN      = 25;   // GPIO 25 (HAT standard, physical pin 22)
-	EPD_CS_PIN      = 8;    // GPIO 8 / SPI0_CE0 (HAT standard, physical pin 24)
-	EPD_BUSY_PIN    = 24;   // GPIO 24 (HAT standard, physical pin 18)
-	EPD_PWR_PIN     = 18;   // GPIO 18 (optional, physical pin 12)
+	// GPIO pinout as specified in GPIO_CONFIG.md
+	// GPIO numbering: bank * 32 + port * 8 + pin
+	// GPIO3_A1 = 3*32 + 0*8 + 1 = 97
+	// GPIO3_A3 = 3*32 + 0*8 + 3 = 99
+	// GPIO4_C6 = 4*32 + 2*8 + 6 = 150
+	// GPIO3_C1 = 3*32 + 2*8 + 1 = 113
+	EPD_RST_PIN     = 97;   // GPIO3_A1 (physical pin 11)
+	EPD_DC_PIN      = 99;   // GPIO3_A3 (physical pin 12)
+	EPD_CS_PIN      = 150;  // GPIO4_C6 / SPI3_CS0_M1 (physical pin 24)
+	EPD_BUSY_PIN    = 113;  // GPIO3_C1 (physical pin 22)
+	EPD_PWR_PIN     = 0;    // +3.3v (physical pin 1) - not a GPIO, set to 0
 #endif
 
 	DEV_GPIO_Mode(EPD_RST_PIN, 1);
 	DEV_GPIO_Mode(EPD_DC_PIN, 1);
 	DEV_GPIO_Mode(EPD_CS_PIN, 1);
-    DEV_GPIO_Mode(EPD_PWR_PIN, 1);
+	if (EPD_PWR_PIN > 0) {
+		DEV_GPIO_Mode(EPD_PWR_PIN, 1);
+		DEV_Digital_Write(EPD_PWR_PIN, 1);
+	}
 	DEV_GPIO_Mode(EPD_BUSY_PIN, 0);
 
 	DEV_Digital_Write(EPD_CS_PIN, 1);
-    DEV_Digital_Write(EPD_PWR_PIN, 1);
 }
 /******************************************************************************
 function:	Module Initialize, the library and initialize the pins, SPI protocol
