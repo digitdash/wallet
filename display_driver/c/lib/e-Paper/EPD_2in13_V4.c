@@ -37,12 +37,14 @@ parameter:
 ******************************************************************************/
 static void EPD_2in13_V4_Reset(void)
 {
+    Debug("EPD Reset: Starting...\r\n");
     DEV_Digital_Write(EPD_RST_PIN, 1);
     DEV_Delay_ms(20);
     DEV_Digital_Write(EPD_RST_PIN, 0);
     DEV_Delay_ms(2);
     DEV_Digital_Write(EPD_RST_PIN, 1);
     DEV_Delay_ms(20);
+    Debug("EPD Reset: Complete\r\n");
 }
 
 /******************************************************************************
@@ -56,6 +58,7 @@ static void EPD_2in13_V4_SendCommand(UBYTE Reg)
     DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_SPI_WriteByte(Reg);
     DEV_Digital_Write(EPD_CS_PIN, 1);
+    Debug("SPI CMD: 0x%02X\r\n", Reg);
 }
 
 /******************************************************************************
@@ -69,6 +72,7 @@ static void EPD_2in13_V4_SendData(UBYTE Data)
     DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_SPI_WriteByte(Data);
     DEV_Digital_Write(EPD_CS_PIN, 1);
+    // Debug("SPI DATA: 0x%02X\r\n", Data);  // Too verbose, comment out
 }
 
 /******************************************************************************
@@ -78,14 +82,22 @@ parameter:
 void EPD_2in13_V4_ReadBusy(void)
 {
     Debug("e-Paper busy\r\n");
-	while(1)
+	int timeout = 1000;  // 10 seconds max wait
+	int count = 0;
+	while(timeout > 0)
 	{	 //=1 BUSY
-		if(DEV_Digital_Read(EPD_BUSY_PIN)==0) 
-			break;
+		if(DEV_Digital_Read(EPD_BUSY_PIN)==0) {
+			Debug("e-Paper busy release (waited %d ms)\r\n", count * 10);
+			DEV_Delay_ms(10);
+			return;
+		}
 		DEV_Delay_ms(10);
+		timeout--;
+		count++;
 	}
+	Debug("WARNING: e-Paper busy timeout! BUSY pin still HIGH after 10 seconds\r\n");
+	Debug("Current BUSY pin value: %d\r\n", DEV_Digital_Read(EPD_BUSY_PIN));
 	DEV_Delay_ms(10);
-    Debug("e-Paper busy release\r\n");
 }
 
 /******************************************************************************

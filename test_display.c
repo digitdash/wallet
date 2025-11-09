@@ -58,15 +58,37 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
     
+    // Test BUSY pin before initialization
+    printf("3. Testing BUSY pin before initialization...\n");
+    DEV_GPIO_Mode(EPD_BUSY_PIN, 0);  // Set as input
+    int busy_value = DEV_Digital_Read(EPD_BUSY_PIN);
+    printf("   BUSY pin value: %d (0=ready, 1=busy)\n", busy_value);
+    
+    // Test RST pin toggle before initialization
+    printf("3b. Testing RST pin toggle...\n");
+    printf("   Setting RST HIGH...\n");
+    DEV_Digital_Write(EPD_RST_PIN, 1);
+    usleep(20000);  // 20ms
+    printf("   Setting RST LOW...\n");
+    DEV_Digital_Write(EPD_RST_PIN, 0);
+    usleep(2000);   // 2ms
+    printf("   Setting RST HIGH again...\n");
+    DEV_Digital_Write(EPD_RST_PIN, 1);
+    usleep(20000);  // 20ms
+    printf("   RST pin toggle complete\n");
+    
     // Initialize display
-    printf("3. Initializing display...\n");
+    printf("4. Initializing display...\n");
     printf("   Calling EPD_2in13_V4_Init()...\n");
     EPD_2in13_V4_Init();
     printf("   EPD_2in13_V4_Init() completed\n");
     printf("   Display initialized\n");
     
+    // Test BUSY pin after initialization
+    printf("   BUSY pin after init: %d (0=ready, 1=busy)\n", DEV_Digital_Read(EPD_BUSY_PIN));
+    
     // Clear display (should flash white)
-    printf("4. Clearing display (should flash white)...\n");
+    printf("5. Clearing display (should flash white)...\n");
     printf("   Calling EPD_2in13_V4_Clear()...\n");
     EPD_2in13_V4_Clear();
     printf("   EPD_2in13_V4_Clear() completed\n");
@@ -74,7 +96,7 @@ int main(int argc, char *argv[]) {
     sleep(3);
     
     // Create a simple test pattern
-    printf("5. Creating test pattern...\n");
+    printf("6. Creating test pattern...\n");
     UBYTE *image = (UBYTE *)malloc(EPD_2in13_V4_WIDTH * EPD_2in13_V4_HEIGHT / 8);
     if (!image) {
         fprintf(stderr, "ERROR: Failed to allocate image buffer\n");
@@ -95,24 +117,24 @@ int main(int argc, char *argv[]) {
     }
     
     // Display the pattern
-    printf("6. Displaying test pattern (should see black rectangle)...\n");
+    printf("7. Displaying test pattern (should see black rectangle)...\n");
     EPD_2in13_V4_Display(image);
     printf("   Pattern displayed\n");
     sleep(3);
     
     // Clear again
-    printf("7. Clearing display again...\n");
+    printf("8. Clearing display again...\n");
     EPD_2in13_V4_Clear();
     printf("   Display cleared\n");
     sleep(2);
     
     // Put display to sleep
-    printf("8. Putting display to sleep...\n");
+    printf("9. Putting display to sleep...\n");
     EPD_2in13_V4_Sleep();
     printf("   Display sleeping\n");
     
     // Cleanup
-    printf("9. Cleaning up...\n");
+    printf("10. Cleaning up...\n");
     free(image);
     DEV_Module_Exit();
     printf("   Cleanup complete\n");

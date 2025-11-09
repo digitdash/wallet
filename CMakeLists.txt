@@ -176,6 +176,7 @@ target_compile_definitions(wallet_app PRIVATE
     USE_DEV_LIB
     RADXA_ZERO_3W
     LV_CONF_INCLUDE_SIMPLE
+    DEBUG=1
 )
 
 # Test display executable
@@ -193,6 +194,7 @@ target_compile_definitions(test_display PRIVATE
     EPD=epd2in13V4
     USE_DEV_LIB
     RADXA_ZERO_3W
+    DEBUG=1
 )
 
 target_link_libraries(test_display
@@ -211,6 +213,15 @@ target_include_directories(test_gpio PRIVATE
 )
 
 target_link_libraries(test_gpio
+    m
+)
+
+# Test SPI executable
+add_executable(test_spi 
+    test_spi.c
+)
+
+target_link_libraries(test_spi
     m
 )
 
