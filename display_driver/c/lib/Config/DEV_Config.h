@@ -105,6 +105,7 @@ extern int EPD_BUSY_PIN;
 extern int EPD_PWR_PIN;
 
 /*------------------------------------------------------------------------------------------------------*/
+void DEV_GPIO_Mode(UWORD Pin, UWORD Mode);
 void DEV_Digital_Write(UWORD Pin, UBYTE Value);
 UBYTE DEV_Digital_Read(UWORD Pin);
 
