@@ -170,6 +170,11 @@ int display_fbdev_init(void) {
     }
     
     printf("Display initialized: %dx%d (Waveshare 2.13\" V4)\n", EPD_WIDTH, EPD_HEIGHT);
+    
+    // Force an initial display refresh to show something
+    printf("Forcing initial display refresh...\n");
+    lv_refr_now(display);
+    
     return 0;
 }
 
@@ -204,7 +209,11 @@ void display_fbdev_deinit(void) {
 }
 
 void display_fbdev_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p) {
+    static int flush_count = 0;
+    flush_count++;
+    
     if (!epaper_buffer || !color_p || !area) {
+        printf("WARNING: display_fbdev_flush called with NULL parameters (flush #%d)\n", flush_count);
         lv_disp_flush_ready(disp_drv);
         return;
     }
@@ -212,6 +221,11 @@ void display_fbdev_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_colo
     // Calculate area dimensions
     int32_t width = lv_area_get_width(area);
     int32_t height = lv_area_get_height(area);
+    
+    if (flush_count <= 3) {
+        printf("Flush #%d: area (%d,%d) to (%d,%d), size %dx%d\n", 
+               flush_count, area->x1, area->y1, area->x2, area->y2, width, height);
+    }
     
     // Convert RGB565 to monochrome for the specified area
     // color_p is the buffer from LVGL containing the area to update
@@ -268,10 +282,18 @@ void display_fbdev_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_colo
         bool is_full_update = (area->x1 == 0 && area->y1 == 0 && 
                                area->x2 == EPD_WIDTH - 1 && area->y2 == EPD_HEIGHT - 1);
         
+        if (flush_count <= 3) {
+            printf("Updating display: full_update=%d, update_count=%d\n", is_full_update, update_count);
+        }
+        
+        // Always use full quality for first few updates to ensure display works
         // Use full refresh every 10 updates to prevent ghosting
         // Use fast mode for partial updates, full mode for complete refreshes
-        if (is_full_update || (update_count % 10 == 0)) {
+        if (is_full_update || (update_count % 10 == 0) || update_count < 3) {
             // Full quality update
+            if (flush_count <= 3) {
+                printf("Using full quality update\n");
+            }
             EPD_2in13_V4_Display(epaper_buffer);
         } else {
             // Fast partial update
@@ -279,13 +301,22 @@ void display_fbdev_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_colo
                 EPD_2in13_V4_Init_Fast();
                 use_fast_mode = true;
             }
+            if (flush_count <= 3) {
+                printf("Using fast update\n");
+            }
             EPD_2in13_V4_Display_Fast(epaper_buffer);
         }
         
         // Wait for display to finish updating
         EPD_2in13_V4_ReadBusy();
         
+        if (flush_count <= 3) {
+            printf("Display update complete\n");
+        }
+        
         update_count++;
+    } else {
+        printf("WARNING: Waveshare not initialized, cannot update display\n");
     }
     
     lv_disp_flush_ready(disp_drv);

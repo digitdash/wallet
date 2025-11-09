@@ -25,21 +25,42 @@ static void cancel_btn_event_cb(lv_event_t *e) {
 }
 
 int wallet_ui_init(void) {
+    printf("Initializing wallet UI...\n");
+    
     // Create main screen
     main_screen = lv_obj_create(NULL);
+    if (!main_screen) {
+        fprintf(stderr, "Failed to create main screen\n");
+        return -1;
+    }
     lv_scr_load(main_screen);
+    printf("Main screen created and loaded\n");
     
     // Create balance label
     balance_label = lv_label_create(main_screen);
+    if (!balance_label) {
+        fprintf(stderr, "Failed to create balance label\n");
+        return -1;
+    }
     lv_obj_align(balance_label, LV_ALIGN_TOP_MID, 0, 20);
     lv_label_set_text(balance_label, "Balance: 0.000000000 XMR");
     lv_obj_set_style_text_font(balance_label, &lv_font_montserrat_18, 0);
+    printf("Balance label created\n");
     
     // Create status label
     status_label = lv_label_create(main_screen);
+    if (!status_label) {
+        fprintf(stderr, "Failed to create status label\n");
+        return -1;
+    }
     lv_obj_align(status_label, LV_ALIGN_BOTTOM_MID, 0, -20);
     lv_label_set_text(status_label, "Ready");
     lv_obj_set_style_text_font(status_label, &lv_font_montserrat_14, 0);
+    printf("Status label created\n");
+    
+    // Force a refresh to make sure UI is rendered
+    printf("Forcing UI refresh...\n");
+    lv_refr_now(NULL);
     
     return 0;
 }
