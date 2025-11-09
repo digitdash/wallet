@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <string.h>
 #include "EPD_2in13_V4.h"
 #include "DEV_Config.h"
 
@@ -18,11 +19,37 @@ int main(int argc, char *argv[]) {
     
     // Print GPIO pin numbers
     printf("2. GPIO Pin Configuration:\n");
-    printf("   RST_PIN = %d\n", EPD_RST_PIN);
-    printf("   DC_PIN = %d\n", EPD_DC_PIN);
-    printf("   CS_PIN = %d\n", EPD_CS_PIN);
-    printf("   BUSY_PIN = %d\n", EPD_BUSY_PIN);
-    printf("   PWR_PIN = %d\n", EPD_PWR_PIN);
+    printf("   RST_PIN = %d (GPIO3_A1, physical pin 11)\n", EPD_RST_PIN);
+    printf("   DC_PIN = %d (GPIO3_A3, physical pin 12)\n", EPD_DC_PIN);
+    printf("   CS_PIN = %d (GPIO4_C6, physical pin 24)\n", EPD_CS_PIN);
+    printf("   BUSY_PIN = %d (GPIO3_C1, physical pin 22)\n", EPD_BUSY_PIN);
+    printf("   PWR_PIN = %d (not used, physical pin 1 is 3.3V)\n", EPD_PWR_PIN);
+    printf("\n");
+    printf("   Checking GPIO chip base numbers...\n");
+    FILE *fp;
+    char line[256];
+    for (int i = 0; i < 10; i++) {
+        char path[256];
+        snprintf(path, sizeof(path), "/sys/class/gpio/gpiochip%d/base", i);
+        fp = fopen(path, "r");
+        if (fp) {
+            if (fgets(line, sizeof(line), fp)) {
+                int base = atoi(line);
+                snprintf(path, sizeof(path), "/sys/class/gpio/gpiochip%d/label", i);
+                FILE *fp2 = fopen(path, "r");
+                char label[64] = "unknown";
+                if (fp2) {
+                    if (fgets(label, sizeof(label), fp2)) {
+                        label[strcspn(label, "\n")] = 0;
+                    }
+                    fclose(fp2);
+                }
+                printf("   GPIO chip %d: base=%d, label=%s\n", i, base, label);
+            }
+            fclose(fp);
+        }
+    }
+    printf("\n");
     
     // Initialize display
     printf("3. Initializing display...\n");
