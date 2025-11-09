@@ -200,6 +200,20 @@ target_link_libraries(test_display
     pthread
 )
 
+# Test GPIO executable
+add_executable(test_gpio 
+    test_gpio.c
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config/sysfs_gpio.c
+)
+
+target_include_directories(test_gpio PRIVATE
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config
+)
+
+target_link_libraries(test_gpio
+    m
+)
+
 # Installation
 install(TARGETS wallet_app DESTINATION /usr/local/bin)
 install(TARGETS test_display DESTINATION /usr/local/bin)

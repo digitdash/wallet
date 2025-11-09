@@ -11,8 +11,15 @@ int main(int argc, char *argv[]) {
     
     // Initialize module
     printf("1. Initializing module...\n");
-    if (DEV_Module_Init() != 0) {
-        fprintf(stderr, "ERROR: Failed to initialize module\n");
+    printf("   Attempting DEV_Module_Init()...\n");
+    int init_result = DEV_Module_Init();
+    printf("   DEV_Module_Init() returned: %d\n", init_result);
+    if (init_result != 0) {
+        fprintf(stderr, "ERROR: Failed to initialize module (returned %d)\n", init_result);
+        fprintf(stderr, "   Check:\n");
+        fprintf(stderr, "   - GPIO pins are correct\n");
+        fprintf(stderr, "   - Run with sudo\n");
+        fprintf(stderr, "   - SPI device exists: ls /dev/spidev*\n");
         return 1;
     }
     printf("   Module initialized successfully\n");
@@ -53,14 +60,18 @@ int main(int argc, char *argv[]) {
     
     // Initialize display
     printf("3. Initializing display...\n");
+    printf("   Calling EPD_2in13_V4_Init()...\n");
     EPD_2in13_V4_Init();
+    printf("   EPD_2in13_V4_Init() completed\n");
     printf("   Display initialized\n");
     
     // Clear display (should flash white)
     printf("4. Clearing display (should flash white)...\n");
+    printf("   Calling EPD_2in13_V4_Clear()...\n");
     EPD_2in13_V4_Clear();
-    printf("   Display cleared\n");
-    sleep(2);
+    printf("   EPD_2in13_V4_Clear() completed\n");
+    printf("   Display cleared - you should see a white flash!\n");
+    sleep(3);
     
     // Create a simple test pattern
     printf("5. Creating test pattern...\n");
