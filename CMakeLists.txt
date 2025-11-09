@@ -178,6 +178,29 @@ target_compile_definitions(wallet_app PRIVATE
     LV_CONF_INCLUDE_SIMPLE
 )
 
+# Test display executable
+add_executable(test_display 
+    test_display.c
+    ${DISPLAY_DRIVER_SOURCES}
+)
+
+target_include_directories(test_display PRIVATE
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/Config
+    ${DISPLAY_DRIVER_BASE_DIR}/c/lib/e-Paper
+)
+
+target_compile_definitions(test_display PRIVATE
+    EPD=epd2in13V4
+    USE_DEV_LIB
+    RADXA_ZERO_3W
+)
+
+target_link_libraries(test_display
+    m
+    pthread
+)
+
 # Installation
 install(TARGETS wallet_app DESTINATION /usr/local/bin)
+install(TARGETS test_display DESTINATION /usr/local/bin)
 
