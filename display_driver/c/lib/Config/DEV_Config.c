@@ -209,17 +209,17 @@ void DEV_GPIO_Mode(UWORD Pin, UWORD Mode)
 #ifdef RADXA_ZERO_3W
 #ifdef USE_DEV_LIB
 	SYSFS_GPIO_Export(Pin);
-	if(Mode == 0 || Mode == SYSFS_GPIO_IN) {
-		SYSFS_GPIO_Direction(Pin, SYSFS_GPIO_IN);
+	if(Mode == 0 || Mode == IN) {
+		SYSFS_GPIO_Direction(Pin, IN);
 	} else {
-		SYSFS_GPIO_Direction(Pin, SYSFS_GPIO_OUT);
+		SYSFS_GPIO_Direction(Pin, OUT);
 	}
 #elif USE_HARDWARE_LIB
 	SYSFS_GPIO_Export(Pin);
-	if(Mode == 0 || Mode == SYSFS_GPIO_IN) {
-		SYSFS_GPIO_Direction(Pin, SYSFS_GPIO_IN);
+	if(Mode == 0 || Mode == IN) {
+		SYSFS_GPIO_Direction(Pin, IN);
 	} else {
-		SYSFS_GPIO_Direction(Pin, SYSFS_GPIO_OUT);
+		SYSFS_GPIO_Direction(Pin, OUT);
 	}
 #endif
 #endif
