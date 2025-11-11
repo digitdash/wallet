@@ -332,14 +332,18 @@ void DEV_GPIO_Init(void)
 
 	DEV_GPIO_Mode(EPD_RST_PIN, 1);
 	DEV_GPIO_Mode(EPD_DC_PIN, 1);
+#if !(defined(RADXA_ZERO_3W) && defined(RADXA_USE_HW_SPI_CS))
 	DEV_GPIO_Mode(EPD_CS_PIN, 1);
+#endif
 	if (EPD_PWR_PIN > 0) {
 		DEV_GPIO_Mode(EPD_PWR_PIN, 1);
 		DEV_Digital_Write(EPD_PWR_PIN, 1);
 	}
 	DEV_GPIO_Mode(EPD_BUSY_PIN, 0);
 
+#if !(defined(RADXA_ZERO_3W) && defined(RADXA_USE_HW_SPI_CS))
 	DEV_Digital_Write(EPD_CS_PIN, 1);
+#endif
 }
 /******************************************************************************
 function:	Module Initialize, the library and initialize the pins, SPI protocol
@@ -410,15 +414,17 @@ UBYTE DEV_Module_Init(void)
 	DEV_GPIO_Init();
 	printf("Radxa Zero 3w: Using hardware SPI /dev/spidev1.0\r\n");
 	DEV_HARDWARE_SPI_begin("/dev/spidev1.0");
+	DEV_HARDWARE_SPI_Mode(SPI_MODE0);  // SPI mode 0 (matches working ESP32 code)
 	DEV_HARDWARE_SPI_SetBitOrder(SPI_BIT_ORDER_MSBFIRST);  // Waveshare uses MSB first
-	DEV_HARDWARE_SPI_ChipSelect(SPI_CS_Mode_NONE);  // CS is manually controlled
+	DEV_HARDWARE_SPI_ChipSelect(SPI_CS_Mode_LOW);  // Use hardware-controlled CS
 	DEV_HARDWARE_SPI_setSpeed(1000000);  // 1MHz SPI speed (matches working ESP32 code)
 #elif USE_HARDWARE_LIB
 	printf("Write and read /dev/spidev1.0 \r\n");
 	DEV_GPIO_Init();
 	DEV_HARDWARE_SPI_begin("/dev/spidev1.0");
+	DEV_HARDWARE_SPI_Mode(SPI_MODE0);  // SPI mode 0 (matches working ESP32 code)
 	DEV_HARDWARE_SPI_SetBitOrder(SPI_BIT_ORDER_MSBFIRST);  // Waveshare uses MSB first
-	DEV_HARDWARE_SPI_ChipSelect(SPI_CS_Mode_NONE);  // CS is manually controlled
+	DEV_HARDWARE_SPI_ChipSelect(SPI_CS_Mode_LOW);  // Use hardware-controlled CS
 	DEV_HARDWARE_SPI_setSpeed(1000000);  // 1MHz SPI speed (matches working ESP32 code)
 #endif
 
@@ -436,55 +442,67 @@ void DEV_Module_Exit(void)
 {
 #ifdef RPI
 #ifdef USE_BCM2835_LIB
-	DEV_Digital_Write(EPD_CS_PIN, LOW);
+    DEV_Digital_Write(EPD_CS_PIN, LOW);
     DEV_Digital_Write(EPD_PWR_PIN, LOW);
-	DEV_Digital_Write(EPD_DC_PIN, LOW);
-	DEV_Digital_Write(EPD_RST_PIN, LOW);
+    DEV_Digital_Write(EPD_DC_PIN, LOW);
+    DEV_Digital_Write(EPD_RST_PIN, LOW);
 
-	bcm2835_spi_end();
-	bcm2835_close();
+    bcm2835_spi_end();
+    bcm2835_close();
 #elif USE_WIRINGPI_LIB
-	DEV_Digital_Write(EPD_CS_PIN, 0);
+    DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_Digital_Write(EPD_PWR_PIN, 0);
-	DEV_Digital_Write(EPD_DC_PIN, 0);
-	DEV_Digital_Write(EPD_RST_PIN, 0);
+    DEV_Digital_Write(EPD_DC_PIN, 0);
+    DEV_Digital_Write(EPD_RST_PIN, 0);
 #elif USE_DEV_LIB
-	DEV_HARDWARE_SPI_end();
-	DEV_Digital_Write(EPD_CS_PIN, 0);
+    DEV_HARDWARE_SPI_end();
+    DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_Digital_Write(EPD_PWR_PIN, 0);
-	DEV_Digital_Write(EPD_DC_PIN, 0);
-	DEV_Digital_Write(EPD_RST_PIN, 0);
+    DEV_Digital_Write(EPD_DC_PIN, 0);
+    DEV_Digital_Write(EPD_RST_PIN, 0);
 #endif
 
-#elif JETSON
+#elif defined(JETSON)
 #ifdef USE_DEV_LIB
-	SYSFS_GPIO_Unexport(EPD_CS_PIN);
+    SYSFS_GPIO_Unexport(EPD_CS_PIN);
     SYSFS_GPIO_Unexport(EPD_PWR_PIN);
-	SYSFS_GPIO_Unexport(EPD_DC_PIN);
-	SYSFS_GPIO_Unexport(EPD_RST_PIN);
-	SYSFS_GPIO_Unexport(EPD_BUSY_PIN);
+    SYSFS_GPIO_Unexport(EPD_DC_PIN);
+    SYSFS_GPIO_Unexport(EPD_RST_PIN);
+    SYSFS_GPIO_Unexport(EPD_BUSY_PIN);
 #elif USE_HARDWARE_LIB
-	Debug("not support");
+    Debug("not support");
 #endif
 
-#elif RADXA_ZERO_3W
+#elif defined(RADXA_ZERO_3W)
 #ifdef USE_DEV_LIB
-	DEV_HARDWARE_SPI_end();
-	DEV_Digital_Write(EPD_CS_PIN, 0);
-	DEV_Digital_Write(EPD_PWR_PIN, 0);
-	DEV_Digital_Write(EPD_DC_PIN, 0);
-	DEV_Digital_Write(EPD_RST_PIN, 0);
-	SYSFS_GPIO_Unexport(EPD_CS_PIN);
-	SYSFS_GPIO_Unexport(EPD_PWR_PIN);
-	SYSFS_GPIO_Unexport(EPD_DC_PIN);
-	SYSFS_GPIO_Unexport(EPD_RST_PIN);
-	SYSFS_GPIO_Unexport(EPD_BUSY_PIN);
+    DEV_HARDWARE_SPI_end();
+#if !(defined(RADXA_ZERO_3W) && defined(RADXA_USE_HW_SPI_CS))
+    DEV_Digital_Write(EPD_CS_PIN, 0);
+#endif
+    if (EPD_PWR_PIN > 0) {
+        DEV_Digital_Write(EPD_PWR_PIN, 0);
+    }
+    DEV_Digital_Write(EPD_DC_PIN, 0);
+    DEV_Digital_Write(EPD_RST_PIN, 0);
+#if !(defined(RADXA_ZERO_3W) && defined(RADXA_USE_HW_SPI_CS))
+    SYSFS_GPIO_Unexport(EPD_CS_PIN);
+#endif
+    if (EPD_PWR_PIN > 0) {
+        SYSFS_GPIO_Unexport(EPD_PWR_PIN);
+    }
+    SYSFS_GPIO_Unexport(EPD_DC_PIN);
+    SYSFS_GPIO_Unexport(EPD_RST_PIN);
+    SYSFS_GPIO_Unexport(EPD_BUSY_PIN);
 #elif USE_HARDWARE_LIB
-	DEV_HARDWARE_SPI_end();
-	DEV_Digital_Write(EPD_CS_PIN, 0);
-	DEV_Digital_Write(EPD_PWR_PIN, 0);
-	DEV_Digital_Write(EPD_DC_PIN, 0);
-	DEV_Digital_Write(EPD_RST_PIN, 0);
+    DEV_HARDWARE_SPI_end();
+    DEV_Digital_Write(EPD_DC_PIN, 0);
+    DEV_Digital_Write(EPD_RST_PIN, 0);
+#if !(defined(RADXA_ZERO_3W) && defined(RADXA_USE_HW_SPI_CS))
+    DEV_Digital_Write(EPD_CS_PIN, 0);
+#endif
+    if (EPD_PWR_PIN > 0) {
+        DEV_Digital_Write(EPD_PWR_PIN, 0);
+    }
 #endif
 #endif
 }

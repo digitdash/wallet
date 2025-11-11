@@ -55,9 +55,14 @@ parameter:
 static void EPD_2in13_V4_SendCommand(UBYTE Reg)
 {
     DEV_Digital_Write(EPD_DC_PIN, 0);
+
+#if defined(RADXA_ZERO_3W) && defined(RADXA_USE_HW_SPI_CS)
+    DEV_SPI_WriteByte(Reg);
+#else
     DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_SPI_WriteByte(Reg);
     DEV_Digital_Write(EPD_CS_PIN, 1);
+#endif
     Debug("SPI CMD: 0x%02X\r\n", Reg);
 }
 
@@ -69,9 +74,14 @@ parameter:
 static void EPD_2in13_V4_SendData(UBYTE Data)
 {
     DEV_Digital_Write(EPD_DC_PIN, 1);
+
+#if defined(RADXA_ZERO_3W) && defined(RADXA_USE_HW_SPI_CS)
+    DEV_SPI_WriteByte(Data);
+#else
     DEV_Digital_Write(EPD_CS_PIN, 0);
     DEV_SPI_WriteByte(Data);
     DEV_Digital_Write(EPD_CS_PIN, 1);
+#endif
     // Debug("SPI DATA: 0x%02X\r\n", Data);  // Too verbose, comment out
 }
 
